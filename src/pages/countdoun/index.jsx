@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export const useCountdown = (targetDate) => {
-  const [timeLeft, setTimeLeft] = useState(getTimeRemaining());
-
-  function getTimeRemaining() {
+  // Make getTimeRemaining stable with useCallback
+  const getTimeRemaining = useCallback(() => {
     const total = new Date(targetDate) - new Date();
     const seconds = Math.floor((total / 1000) % 60);
     const minutes = Math.floor((total / 1000 / 60) % 60);
     const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
 
     return { total, hours, minutes, seconds };
-  }
+  }, [targetDate]); // depends on targetDate
+
+  const [timeLeft, setTimeLeft] = useState(getTimeRemaining());
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -18,9 +19,7 @@ export const useCountdown = (targetDate) => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [getTimeRemaining]); // now it's safe to include
 
   return timeLeft;
 };
-
-
